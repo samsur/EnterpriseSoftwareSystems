@@ -10,7 +10,7 @@ This exercise will guide you through building a complete Event RSVP Management S
 
 ---
 
-## Exercise Overview
+##  Exercise Overview
 
 You'll build this system step by step:
 
@@ -75,25 +75,25 @@ namespace WorkingWithData.Models
     public class Event
     {
         public int EventId { get; set; }
-
+        
         [Required]
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;
-
+        
         [Required]
         [StringLength(500)]
         public string Description { get; set; } = string.Empty;
-
+        
         [Required]
         public DateTime EventDate { get; set; }
-
+        
         [Required]
         [StringLength(200)]
         public string Location { get; set; } = string.Empty;
-
+        
         [Range(1, 1000)]
         public int MaxAttendees { get; set; }
-
+        
         // Navigation property for related RSVPs
         public List<Rsvp> Rsvps { get; set; } = new List<Rsvp>();
     }
@@ -112,25 +112,25 @@ namespace WorkingWithData.Models
     public class Rsvp
     {
         public int RsvpId { get; set; }
-
+        
         [Required]
         public int EventId { get; set; }
-
+        
         [Required]
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;
-
+        
         [Required]
         [EmailAddress]
         [StringLength(200)]
         public string Email { get; set; } = string.Empty;
-
+        
         [Phone]
         [StringLength(20)]
         public string Phone { get; set; } = string.Empty;
-
+        
         public DateTime RsvpDate { get; set; } = DateTime.Now;
-
+        
         // Navigation property to related Event
         public Event? Event { get; set; }
     }
@@ -159,14 +159,14 @@ namespace WorkingWithData.Models
         public EventDbContext(DbContextOptions<EventDbContext> options) : base(options)
         {
         }
-
+        
         public DbSet<Event> Events => Set<Event>();
         public DbSet<Rsvp> Rsvps => Set<Rsvp>();
-
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            
             // Configure Event entity
             modelBuilder.Entity<Event>(entity =>
             {
@@ -175,7 +175,7 @@ namespace WorkingWithData.Models
                 entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
                 entity.Property(e => e.Location).IsRequired().HasMaxLength(200);
             });
-
+            
             // Configure RSVP entity
             modelBuilder.Entity<Rsvp>(entity =>
             {
@@ -183,7 +183,7 @@ namespace WorkingWithData.Models
                 entity.Property(r => r.Name).IsRequired().HasMaxLength(100);
                 entity.Property(r => r.Email).IsRequired().HasMaxLength(200);
                 entity.Property(r => r.Phone).HasMaxLength(20);
-
+                
                 // Configure relationship
                 entity.HasOne(r => r.Event)
                       .WithMany(e => e.Rsvps)
@@ -335,12 +335,12 @@ namespace WorkingWithData.Models.Repository
     public class EventRepository : IEventRepository
     {
         private readonly EventDbContext _context;
-
+        
         public EventRepository(EventDbContext context)
         {
             _context = context;
         }
-
+        
         public IEnumerable<Event> GetAllEvents()
         {
             return _context.Events
@@ -348,24 +348,24 @@ namespace WorkingWithData.Models.Repository
                           .OrderBy(e => e.EventDate)
                           .ToList();
         }
-
+        
         public Event? GetEventById(int id)
         {
             return _context.Events
                           .Include(e => e.Rsvps)
                           .FirstOrDefault(e => e.EventId == id);
         }
-
+        
         public void AddEvent(Event eventItem)
         {
             _context.Events.Add(eventItem);
         }
-
+        
         public void UpdateEvent(Event eventItem)
         {
             _context.Events.Update(eventItem);
         }
-
+        
         public void DeleteEvent(int id)
         {
             var eventItem = _context.Events.Find(id);
@@ -374,7 +374,7 @@ namespace WorkingWithData.Models.Repository
                 _context.Events.Remove(eventItem);
             }
         }
-
+        
         public void SaveChanges()
         {
             _context.SaveChanges();
@@ -395,12 +395,12 @@ namespace WorkingWithData.Models.Repository
     public class RsvpRepository : IRsvpRepository
     {
         private readonly EventDbContext _context;
-
+        
         public RsvpRepository(EventDbContext context)
         {
             _context = context;
         }
-
+        
         public IEnumerable<Rsvp> GetAllRsvps()
         {
             return _context.Rsvps
@@ -408,7 +408,7 @@ namespace WorkingWithData.Models.Repository
                           .OrderBy(r => r.RsvpDate)
                           .ToList();
         }
-
+        
         public IEnumerable<Rsvp> GetRsvpsByEventId(int eventId)
         {
             return _context.Rsvps
@@ -417,24 +417,24 @@ namespace WorkingWithData.Models.Repository
                           .OrderBy(r => r.RsvpDate)
                           .ToList();
         }
-
+        
         public Rsvp? GetRsvpById(int id)
         {
             return _context.Rsvps
                           .Include(r => r.Event)
                           .FirstOrDefault(r => r.RsvpId == id);
         }
-
+        
         public void AddRsvp(Rsvp rsvp)
         {
             _context.Rsvps.Add(rsvp);
         }
-
+        
         public void UpdateRsvp(Rsvp rsvp)
         {
             _context.Rsvps.Update(rsvp);
         }
-
+        
         public void DeleteRsvp(int id)
         {
             var rsvp = _context.Rsvps.Find(id);
@@ -443,7 +443,7 @@ namespace WorkingWithData.Models.Repository
                 _context.Rsvps.Remove(rsvp);
             }
         }
-
+        
         public void SaveChanges()
         {
             _context.SaveChanges();
@@ -535,13 +535,13 @@ namespace WorkingWithData.Data
         {
             using var context = new EventDbContext(
                 serviceProvider.GetRequiredService<DbContextOptions<EventDbContext>>());
-
+                
             // Look for any events
             if (context.Events.Any())
             {
                 return; // DB has been seeded
             }
-
+            
             var events = new Event[]
             {
                 new Event
@@ -585,7 +585,7 @@ namespace WorkingWithData.Data
                     MaxAttendees = 75
                 }
             };
-
+            
             context.Events.AddRange(events);
             context.SaveChanges();
         }
@@ -665,20 +665,20 @@ namespace WorkingWithData.Controllers
     {
         private readonly IRsvpRepository _rsvpRepository;
         private readonly IEventRepository _eventRepository;
-
+        
         public RsvpController(IRsvpRepository rsvpRepository, IEventRepository eventRepository)
         {
             _rsvpRepository = rsvpRepository;
             _eventRepository = eventRepository;
         }
-
+        
         // GET: Rsvp
         public IActionResult Index()
         {
             var rsvps = _rsvpRepository.GetAllRsvps();
             return View(rsvps);
         }
-
+        
         // GET: Rsvp/Details/5
         public IActionResult Details(int id)
         {
@@ -689,7 +689,7 @@ namespace WorkingWithData.Controllers
             }
             return View(rsvp);
         }
-
+        
         // GET: Rsvp/Create/5 (5 is EventId)
         public IActionResult Create(int eventId)
         {
@@ -698,11 +698,11 @@ namespace WorkingWithData.Controllers
             {
                 return NotFound();
             }
-
+            
             var rsvp = new Rsvp { EventId = eventId, Event = eventItem };
             return View(rsvp);
         }
-
+        
         // POST: Rsvp/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -715,12 +715,12 @@ namespace WorkingWithData.Controllers
                 _rsvpRepository.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
-
+            
             // Reload event if validation fails
             rsvp.Event = _eventRepository.GetEventById(rsvp.EventId);
             return View(rsvp);
         }
-
+        
         // GET: Rsvp/Edit/5
         public IActionResult Edit(int id)
         {
@@ -731,7 +731,7 @@ namespace WorkingWithData.Controllers
             }
             return View(rsvp);
         }
-
+        
         // POST: Rsvp/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -741,19 +741,19 @@ namespace WorkingWithData.Controllers
             {
                 return NotFound();
             }
-
+            
             if (ModelState.IsValid)
             {
                 _rsvpRepository.UpdateRsvp(rsvp);
                 _rsvpRepository.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
-
+            
             // Reload event if validation fails
             rsvp.Event = _eventRepository.GetEventById(rsvp.EventId);
             return View(rsvp);
         }
-
+        
         // GET: Rsvp/Delete/5
         public IActionResult Delete(int id)
         {
@@ -764,7 +764,7 @@ namespace WorkingWithData.Controllers
             }
             return View(rsvp);
         }
-
+        
         // POST: Rsvp/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -802,24 +802,24 @@ namespace WorkingWithData.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IEventRepository _eventRepository;
-
+        
         public HomeController(ILogger<HomeController> logger, IEventRepository eventRepository)
         {
             _logger = logger;
             _eventRepository = eventRepository;
         }
-
+        
         public IActionResult Index()
         {
             var events = _eventRepository.GetAllEvents();
             return View(events);
         }
-
+        
         public IActionResult Privacy()
         {
             return View();
         }
-
+        
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -857,7 +857,7 @@ Update `Views/Home/Index.cshtml`:
             <p class="lead text-center text-muted mb-5">Discover exciting events and RSVP today!</p>
         </div>
     </div>
-
+    
     <div class="row">
         @foreach (var eventItem in Model)
         {
@@ -874,7 +874,7 @@ Update `Views/Home/Index.cshtml`:
                         </ul>
                     </div>
                     <div class="card-footer bg-transparent">
-                        <a href="@Url.Action("Create", "Rsvp", new { eventId = eventItem.EventId })"
+                        <a href="@Url.Action("Create", "Rsvp", new { eventId = eventItem.EventId })" 
                            class="btn btn-primary w-100">
                             RSVP Now
                         </a>
@@ -883,7 +883,7 @@ Update `Views/Home/Index.cshtml`:
             </div>
         }
     </div>
-
+    
     <div class="row mt-4">
         <div class="col-12 text-center">
             <a href="@Url.Action("Index", "Rsvp")" class="btn btn-outline-secondary">
@@ -911,7 +911,7 @@ Create `Views/Rsvp/Index.cshtml`:
 
 <div class="container">
     <h1> All RSVPs</h1>
-
+    
     <div class="row mb-3">
         <div class="col">
             <a href="@Url.Action("Index", "Home")" class="btn btn-outline-primary">
@@ -919,7 +919,7 @@ Create `Views/Rsvp/Index.cshtml`:
             </a>
         </div>
     </div>
-
+    
     @if (Model.Any())
     {
         <div class="table-responsive">
@@ -944,11 +944,11 @@ Create `Views/Rsvp/Index.cshtml`:
                             <td>@rsvp.Phone</td>
                             <td>@rsvp.RsvpDate.ToString("MMM dd, yyyy")</td>
                             <td>
-                                <a href="@Url.Action("Details", new { id = rsvp.RsvpId })"
+                                <a href="@Url.Action("Details", new { id = rsvp.RsvpId })" 
                                    class="btn btn-sm btn-outline-info">Details</a>
-                                <a href="@Url.Action("Edit", new { id = rsvp.RsvpId })"
+                                <a href="@Url.Action("Edit", new { id = rsvp.RsvpId })" 
                                    class="btn btn-sm btn-outline-warning">Edit</a>
-                                <a href="@Url.Action("Delete", new { id = rsvp.RsvpId })"
+                                <a href="@Url.Action("Delete", new { id = rsvp.RsvpId })" 
                                    class="btn btn-sm btn-outline-danger">Delete</a>
                             </td>
                         </tr>
@@ -996,28 +996,28 @@ Create `Views/Rsvp/Create.cshtml`:
                             <p><strong>Description:</strong> @Model.Event.Description</p>
                         </div>
                     }
-
+                    
                     <form asp-action="Create" method="post">
                         <input type="hidden" asp-for="EventId" />
-
+                        
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label">Full Name *</label>
                             <input asp-for="Name" class="form-control" placeholder="Enter your full name" />
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
-
+                        
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label">Email Address *</label>
                             <input asp-for="Email" class="form-control" placeholder="Enter your email address" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
-
+                        
                         <div class="mb-3">
                             <label asp-for="Phone" class="form-label">Phone Number</label>
                             <input asp-for="Phone" class="form-control" placeholder="Enter your phone number" />
                             <span asp-validation-for="Phone" class="text-danger"></span>
                         </div>
-
+                        
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-success btn-lg">
                                  Confirm RSVP
@@ -1057,25 +1057,25 @@ Create `Views/Rsvp/Edit.cshtml`:
                         <input type="hidden" asp-for="RsvpId" />
                         <input type="hidden" asp-for="EventId" />
                         <input type="hidden" asp-for="RsvpDate" />
-
+                        
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label">Full Name *</label>
                             <input asp-for="Name" class="form-control" />
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
-
+                        
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label">Email Address *</label>
                             <input asp-for="Email" class="form-control" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
-
+                        
                         <div class="mb-3">
                             <label asp-for="Phone" class="form-label">Phone Number</label>
                             <input asp-for="Phone" class="form-control" />
                             <span asp-validation-for="Phone" class="text-danger"></span>
                         </div>
-
+                        
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-warning btn-lg">
                                 Update RSVP
@@ -1114,20 +1114,20 @@ Create `Views/Rsvp/Details.cshtml`:
                     <dl class="row">
                         <dt class="col-sm-3">Event:</dt>
                         <dd class="col-sm-9">@Model.Event?.Name</dd>
-
+                        
                         <dt class="col-sm-3">Name:</dt>
                         <dd class="col-sm-9">@Model.Name</dd>
-
+                        
                         <dt class="col-sm-3">Email:</dt>
                         <dd class="col-sm-9">@Model.Email</dd>
-
+                        
                         <dt class="col-sm-3">Phone:</dt>
                         <dd class="col-sm-9">@Model.Phone</dd>
-
+                        
                         <dt class="col-sm-3">RSVP Date:</dt>
                         <dd class="col-sm-9">@Model.RsvpDate.ToString("MMM dd, yyyy - h:mm tt")</dd>
                     </dl>
-
+                    
                     <div class="mt-3">
                         <a href="@Url.Action("Edit", new { id = Model.RsvpId })" class="btn btn-warning">
                              Edit
@@ -1166,28 +1166,28 @@ Create `Views/Rsvp/Delete.cshtml`:
                         <h4>Are you sure you want to delete this RSVP?</h4>
                         <p>This action cannot be undone.</p>
                     </div>
-
+                    
                     <dl class="row">
                         <dt class="col-sm-3">Event:</dt>
                         <dd class="col-sm-9">@Model.Event?.Name</dd>
-
+                        
                         <dt class="col-sm-3">Name:</dt>
                         <dd class="col-sm-9">@Model.Name</dd>
-
+                        
                         <dt class="col-sm-3">Email:</dt>
                         <dd class="col-sm-9">@Model.Email</dd>
-
+                        
                         <dt class="col-sm-3">RSVP Date:</dt>
                         <dd class="col-sm-9">@Model.RsvpDate.ToString("MMM dd, yyyy")</dd>
                     </dl>
-
+                    
                     <form asp-action="Delete" method="post" class="d-inline">
                         <input type="hidden" asp-for="RsvpId" />
                         <button type="submit" class="btn btn-danger">
                             Yes, Delete
                         </button>
                     </form>
-
+                    
                     <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
                         Cancel
                     </a>
@@ -1228,7 +1228,7 @@ Update `Views/Shared/_Layout.cshtml`:
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" href="@Url.Action("Index", "Home")">Event RSVP</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" 
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -1248,7 +1248,7 @@ Update `Views/Shared/_Layout.cshtml`:
             </div>
         </nav>
     </header>
-
+    
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -1260,7 +1260,7 @@ Update `Views/Shared/_Layout.cshtml`:
             &copy; 2024 - Event RSVP System - <a href="@Url.Action("Privacy", "Home")">Privacy</a>
         </div>
     </footer>
-
+    
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -1286,11 +1286,7 @@ html {
   }
 }
 
-.btn:focus,
-.btn:active:focus,
-.btn-link.nav-link:focus,
-.form-control:focus,
-.form-check-input:focus {
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
@@ -1322,7 +1318,7 @@ body {
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
 }
 
 .card-title {
@@ -1337,7 +1333,7 @@ body {
 
 /* Event card specific styling */
 .card-footer {
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(0,0,0,0.08);
   padding: 1rem;
 }
 
@@ -1372,7 +1368,7 @@ body {
 
 .form-control:focus {
   border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 
 /* Alert styling */
@@ -1386,7 +1382,7 @@ body {
   background-color: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .table-responsive {
@@ -1398,7 +1394,7 @@ body {
   .display-4 {
     font-size: 2rem;
   }
-
+  
   .card {
     margin-bottom: 1rem;
   }
@@ -1416,7 +1412,6 @@ Update your layout to include proper navigation between sections.
 **Task**: Verify navigation is working properly
 
 The navigation should already be set up in your layout. Test these links:
-
 - Events page (Home/Index)
 - RSVPs page (Rsvp/Index)
 - Privacy page
@@ -1446,195 +1441,13 @@ dotnet add package Moq --version 4.20.69
 dotnet add package Microsoft.EntityFrameworkCore.InMemory --version 9.0.0
 ```
 
-### 14.2 Create Repository Tests
+### 14.2 Create Controller Tests
 
-Update `UnitTest1.cs` or create `RepositoryTests.cs`:
+Following best practices, we'll create separate test classes for each controller to maintain single responsibility and better organization.
 
-```csharp
-using Microsoft.EntityFrameworkCore;
-using WorkingWithData.Models;
-using WorkingWithData.Models.Repository;
+#### 14.2.1 Create Home Controller Tests
 
-namespace WorkingWithData.Tests
-{
-    public class RepositoryTests : IDisposable
-    {
-        private readonly EventDbContext _context;
-        private readonly EventRepository _eventRepository;
-        private readonly RsvpRepository _rsvpRepository;
-
-        public RepositoryTests()
-        {
-            var options = new DbContextOptionsBuilder<EventDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options;
-
-            _context = new EventDbContext(options);
-            _eventRepository = new EventRepository(_context);
-            _rsvpRepository = new RsvpRepository(_context);
-
-            SeedTestData();
-        }
-
-        private void SeedTestData()
-        {
-            var events = new[]
-            {
-                new Event
-                {
-                    EventId = 1,
-                    Name = "Test Event 1",
-                    Description = "Test Description 1",
-                    EventDate = DateTime.Now.AddDays(30),
-                    Location = "Test Location 1",
-                    MaxAttendees = 100
-                },
-                new Event
-                {
-                    EventId = 2,
-                    Name = "Test Event 2",
-                    Description = "Test Description 2",
-                    EventDate = DateTime.Now.AddDays(45),
-                    Location = "Test Location 2",
-                    MaxAttendees = 150
-                }
-            };
-
-            _context.Events.AddRange(events);
-            _context.SaveChanges();
-        }
-
-        [Fact]
-        public void GetAllEvents_ReturnsAllEvents()
-        {
-            // Act
-            var result = _eventRepository.GetAllEvents();
-
-            // Assert
-            Assert.Equal(2, result.Count());
-        }
-
-        [Fact]
-        public void GetEventById_ValidId_ReturnsEvent()
-        {
-            // Act
-            var result = _eventRepository.GetEventById(1);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal("Test Event 1", result.Name);
-        }
-
-        [Fact]
-        public void GetEventById_InvalidId_ReturnsNull()
-        {
-            // Act
-            var result = _eventRepository.GetEventById(999);
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void AddEvent_ValidEvent_AddsToDatabase()
-        {
-            // Arrange
-            var newEvent = new Event
-            {
-                Name = "New Test Event",
-                Description = "New Test Description",
-                EventDate = DateTime.Now.AddDays(60),
-                Location = "New Test Location",
-                MaxAttendees = 75
-            };
-
-            // Act
-            _eventRepository.AddEvent(newEvent);
-            _eventRepository.SaveChanges();
-
-            // Assert
-            var allEvents = _eventRepository.GetAllEvents();
-            Assert.Equal(3, allEvents.Count());
-            Assert.Contains(allEvents, e => e.Name == "New Test Event");
-        }
-
-        [Fact]
-        public void AddRsvp_ValidRsvp_AddsToDatabase()
-        {
-            // Arrange
-            var newRsvp = new Rsvp
-            {
-                EventId = 1,
-                Name = "John Doe",
-                Email = "john@example.com",
-                Phone = "123-456-7890",
-                RsvpDate = DateTime.Now
-            };
-
-            // Act
-            _rsvpRepository.AddRsvp(newRsvp);
-            _rsvpRepository.SaveChanges();
-
-            // Assert
-            var allRsvps = _rsvpRepository.GetAllRsvps();
-            Assert.Single(allRsvps);
-            Assert.Equal("John Doe", allRsvps.First().Name);
-        }
-
-        [Fact]
-        public void GetRsvpsByEventId_ValidEventId_ReturnsCorrectRsvps()
-        {
-            // Arrange
-            var rsvp1 = new Rsvp { EventId = 1, Name = "Person 1", Email = "person1@example.com" };
-            var rsvp2 = new Rsvp { EventId = 1, Name = "Person 2", Email = "person2@example.com" };
-            var rsvp3 = new Rsvp { EventId = 2, Name = "Person 3", Email = "person3@example.com" };
-
-            _context.Rsvps.AddRange(rsvp1, rsvp2, rsvp3);
-            _context.SaveChanges();
-
-            // Act
-            var result = _rsvpRepository.GetRsvpsByEventId(1);
-
-            // Assert
-            Assert.Equal(2, result.Count());
-            Assert.All(result, r => Assert.Equal(1, r.EventId));
-        }
-
-        [Fact]
-        public void DeleteRsvp_ValidId_RemovesFromDatabase()
-        {
-            // Arrange
-            var rsvp = new Rsvp
-            {
-                EventId = 1,
-                Name = "Test Person",
-                Email = "test@example.com"
-            };
-            _context.Rsvps.Add(rsvp);
-            _context.SaveChanges();
-
-            var rsvpId = rsvp.RsvpId;
-
-            // Act
-            _rsvpRepository.DeleteRsvp(rsvpId);
-            _rsvpRepository.SaveChanges();
-
-            // Assert
-            var deletedRsvp = _rsvpRepository.GetRsvpById(rsvpId);
-            Assert.Null(deletedRsvp);
-        }
-
-        public void Dispose()
-        {
-            _context.Dispose();
-        }
-    }
-}
-```
-
-### 14.3 Create Controller Tests
-
-Create `ControllerTests.cs`:
+Create `HomeControllerTests.cs`:
 
 ```csharp
 using Microsoft.AspNetCore.Mvc;
@@ -1646,21 +1459,19 @@ using WorkingWithData.Models.Repository;
 
 namespace WorkingWithData.Tests
 {
-    public class ControllerTests
+    public class HomeControllerTests
     {
         private readonly Mock<IEventRepository> _mockEventRepository;
-        private readonly Mock<IRsvpRepository> _mockRsvpRepository;
         private readonly Mock<ILogger<HomeController>> _mockLogger;
 
-        public ControllerTests()
+        public HomeControllerTests()
         {
             _mockEventRepository = new Mock<IEventRepository>();
-            _mockRsvpRepository = new Mock<IRsvpRepository>();
             _mockLogger = new Mock<ILogger<HomeController>>();
         }
 
         [Fact]
-        public void HomeController_Index_ReturnsViewWithEvents()
+        public void Index_ReturnsViewWithEvents()
         {
             // Arrange
             var events = new List<Event>
@@ -1684,7 +1495,85 @@ namespace WorkingWithData.Tests
         }
 
         [Fact]
-        public void RsvpController_Create_Get_ReturnsViewWithEvent()
+        public void Privacy_ReturnsView()
+        {
+            // Arrange
+            var controller = new HomeController(_mockLogger.Object, _mockEventRepository.Object);
+
+            // Act
+            var result = controller.Privacy();
+
+            // Assert
+            Assert.IsType<ViewResult>(result);
+        }
+
+        [Fact]
+        public void Error_ReturnsViewWithErrorModel()
+        {
+            // Arrange
+            var controller = new HomeController(_mockLogger.Object, _mockEventRepository.Object);
+
+            // Act
+            var result = controller.Error();
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            Assert.IsType<ErrorViewModel>(viewResult.Model);
+        }
+    }
+}
+```
+
+#### 14.2.2 Create RSVP Controller Tests
+
+Create `RsvpControllerTests.cs`:
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using WorkingWithData.Controllers;
+using WorkingWithData.Models;
+using WorkingWithData.Models.Repository;
+
+namespace WorkingWithData.Tests
+{
+    public class RsvpControllerTests
+    {
+        private readonly Mock<IEventRepository> _mockEventRepository;
+        private readonly Mock<IRsvpRepository> _mockRsvpRepository;
+
+        public RsvpControllerTests()
+        {
+            _mockEventRepository = new Mock<IEventRepository>();
+            _mockRsvpRepository = new Mock<IRsvpRepository>();
+        }
+
+        [Fact]
+        public void Index_ReturnsViewWithAllRsvps()
+        {
+            // Arrange
+            var rsvps = new List<Rsvp>
+            {
+                new Rsvp { RsvpId = 1, Name = "John Doe", Email = "john@test.com" },
+                new Rsvp { RsvpId = 2, Name = "Jane Smith", Email = "jane@test.com" }
+            };
+
+            _mockRsvpRepository.Setup(repo => repo.GetAllRsvps())
+                              .Returns(rsvps);
+
+            var controller = new RsvpController(_mockRsvpRepository.Object, _mockEventRepository.Object);
+
+            // Act
+            var result = controller.Index();
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsAssignableFrom<IEnumerable<Rsvp>>(viewResult.ViewData.Model);
+            Assert.Equal(2, model.Count());
+        }
+
+        [Fact]
+        public void Create_Get_ValidEventId_ReturnsViewWithEvent()
         {
             // Arrange
             var eventItem = new Event
@@ -1713,7 +1602,23 @@ namespace WorkingWithData.Tests
         }
 
         [Fact]
-        public void RsvpController_Create_Post_ValidModel_RedirectsToIndex()
+        public void Create_Get_InvalidEventId_ReturnsNotFound()
+        {
+            // Arrange
+            _mockEventRepository.Setup(repo => repo.GetEventById(999))
+                               .Returns((Event?)null);
+
+            var controller = new RsvpController(_mockRsvpRepository.Object, _mockEventRepository.Object);
+
+            // Act
+            var result = controller.Create(999);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public void Create_Post_ValidModel_RedirectsToIndex()
         {
             // Arrange
             var rsvp = new Rsvp
@@ -1739,7 +1644,61 @@ namespace WorkingWithData.Tests
         }
 
         [Fact]
-        public void RsvpController_Delete_Get_ValidId_ReturnsViewWithRsvp()
+        public void Details_ValidId_ReturnsViewWithRsvp()
+        {
+            // Arrange
+            var rsvp = new Rsvp
+            {
+                RsvpId = 1,
+                EventId = 1,
+                Name = "John Doe",
+                Email = "john@example.com",
+                Event = new Event { EventId = 1, Name = "Test Event" }
+            };
+
+            _mockRsvpRepository.Setup(repo => repo.GetRsvpById(1))
+                              .Returns(rsvp);
+
+            var controller = new RsvpController(_mockRsvpRepository.Object, _mockEventRepository.Object);
+
+            // Act
+            var result = controller.Details(1);
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<Rsvp>(viewResult.ViewData.Model);
+            Assert.Equal("John Doe", model.Name);
+        }
+
+        [Fact]
+        public void Edit_Get_ValidId_ReturnsViewWithRsvp()
+        {
+            // Arrange
+            var rsvp = new Rsvp
+            {
+                RsvpId = 1,
+                EventId = 1,
+                Name = "John Doe",
+                Email = "john@example.com",
+                Event = new Event { EventId = 1, Name = "Test Event" }
+            };
+
+            _mockRsvpRepository.Setup(repo => repo.GetRsvpById(1))
+                              .Returns(rsvp);
+
+            var controller = new RsvpController(_mockRsvpRepository.Object, _mockEventRepository.Object);
+
+            // Act
+            var result = controller.Edit(1);
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<Rsvp>(viewResult.ViewData.Model);
+            Assert.Equal("John Doe", model.Name);
+        }
+
+        [Fact]
+        public void Delete_Get_ValidId_ReturnsViewWithRsvp()
         {
             // Arrange
             var rsvp = new Rsvp
@@ -1766,7 +1725,7 @@ namespace WorkingWithData.Tests
         }
 
         [Fact]
-        public void RsvpController_Delete_Get_InvalidId_ReturnsNotFound()
+        public void Delete_Get_InvalidId_ReturnsNotFound()
         {
             // Arrange
             _mockRsvpRepository.Setup(repo => repo.GetRsvpById(999))
@@ -1780,9 +1739,411 @@ namespace WorkingWithData.Tests
             // Assert
             Assert.IsType<NotFoundResult>(result);
         }
+
+        [Fact]
+        public void DeleteConfirmed_ValidId_RedirectsToIndex()
+        {
+            // Arrange
+            var controller = new RsvpController(_mockRsvpRepository.Object, _mockEventRepository.Object);
+
+            // Act
+            var result = controller.DeleteConfirmed(1);
+
+            // Assert
+            var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("Index", redirectResult.ActionName);
+
+            // Verify repository methods were called
+            _mockRsvpRepository.Verify(repo => repo.DeleteRsvp(1), Times.Once);
+            _mockRsvpRepository.Verify(repo => repo.SaveChanges(), Times.Once);
+        }
     }
 }
 ```
+
+#### 🎯 Why Separate Test Classes?
+
+This approach follows the **Single Responsibility Principle**:
+
+- **`HomeControllerTests`**: Only tests HomeController methods
+- **`RsvpControllerTests`**: Only tests RsvpController methods
+- **Clear dependencies**: Each test class only mocks what it needs
+- **Better organization**: Easier to find and maintain tests
+- **Focused testing**: Each class has a single purpose
+
+### 14.3 Create Repository Tests
+
+Following the same Single Responsibility Principle as our controller tests, we'll create separate test classes for each repository.
+
+#### 14.3.1 Create Event Repository Tests
+
+Update `UnitTest1.cs` or create `EventRepositoryTests.cs`:
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using WorkingWithData.Models;
+using WorkingWithData.Models.Repository;
+
+namespace WorkingWithData.Tests
+{
+    public class EventRepositoryTests : IDisposable
+    {
+        private readonly EventDbContext _context;
+        private readonly EventRepository _eventRepository;
+        
+        public EventRepositoryTests()
+        {
+            var options = new DbContextOptionsBuilder<EventDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+                
+            _context = new EventDbContext(options);
+            _eventRepository = new EventRepository(_context);
+            
+            SeedTestData();
+        }
+        
+        private void SeedTestData()
+        {
+            var events = new[]
+            {
+                new Event 
+                { 
+                    EventId = 1, 
+                    Name = "Test Event 1", 
+                    Description = "Test Description 1",
+                    EventDate = DateTime.Now.AddDays(30),
+                    Location = "Test Location 1",
+                    MaxAttendees = 100
+                },
+                new Event 
+                { 
+                    EventId = 2, 
+                    Name = "Test Event 2", 
+                    Description = "Test Description 2",
+                    EventDate = DateTime.Now.AddDays(45),
+                    Location = "Test Location 2",
+                    MaxAttendees = 150
+                }
+            };
+            
+            _context.Events.AddRange(events);
+            _context.SaveChanges();
+        }
+        
+        [Fact]
+        public void GetAllEvents_ReturnsAllEvents()
+        {
+            // Act
+            var result = _eventRepository.GetAllEvents();
+            
+            // Assert
+            Assert.Equal(2, result.Count());
+        }
+        
+        [Fact]
+        public void GetEventById_ValidId_ReturnsEvent()
+        {
+            // Act
+            var result = _eventRepository.GetEventById(1);
+            
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Test Event 1", result.Name);
+        }
+        
+        [Fact]
+        public void GetEventById_InvalidId_ReturnsNull()
+        {
+            // Act
+            var result = _eventRepository.GetEventById(999);
+            
+            // Assert
+            Assert.Null(result);
+        }
+        
+        [Fact]
+        public void AddEvent_ValidEvent_AddsToDatabase()
+        {
+            // Arrange
+            var newEvent = new Event
+            {
+                Name = "New Test Event",
+                Description = "New Test Description",
+                EventDate = DateTime.Now.AddDays(60),
+                Location = "New Test Location",
+                MaxAttendees = 75
+            };
+            
+            // Act
+            _eventRepository.AddEvent(newEvent);
+            _eventRepository.SaveChanges();
+            
+            // Assert
+            var allEvents = _eventRepository.GetAllEvents();
+            Assert.Equal(3, allEvents.Count());
+            Assert.Contains(allEvents, e => e.Name == "New Test Event");
+        }
+        
+        [Fact]
+        public void UpdateEvent_ValidEvent_UpdatesInDatabase()
+        {
+            // Arrange
+            var eventToUpdate = _eventRepository.GetEventById(1);
+            Assert.NotNull(eventToUpdate);
+            
+            eventToUpdate.Name = "Updated Event Name";
+            eventToUpdate.Location = "Updated Location";
+            
+            // Act
+            _eventRepository.UpdateEvent(eventToUpdate);
+            _eventRepository.SaveChanges();
+            
+            // Assert
+            var updatedEvent = _eventRepository.GetEventById(1);
+            Assert.NotNull(updatedEvent);
+            Assert.Equal("Updated Event Name", updatedEvent.Name);
+            Assert.Equal("Updated Location", updatedEvent.Location);
+        }
+        
+        [Fact]
+        public void DeleteEvent_ValidId_RemovesFromDatabase()
+        {
+            // Act
+            _eventRepository.DeleteEvent(1);
+            _eventRepository.SaveChanges();
+            
+            // Assert
+            var deletedEvent = _eventRepository.GetEventById(1);
+            Assert.Null(deletedEvent);
+            
+            var remainingEvents = _eventRepository.GetAllEvents();
+            Assert.Single(remainingEvents);
+        }
+        
+        public void Dispose()
+        {
+            _context.Dispose();
+        }
+    }
+}
+```
+
+#### 14.3.2 Create RSVP Repository Tests
+
+Create `RsvpRepositoryTests.cs`:
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using WorkingWithData.Models;
+using WorkingWithData.Models.Repository;
+
+namespace WorkingWithData.Tests
+{
+    public class RsvpRepositoryTests : IDisposable
+    {
+        private readonly EventDbContext _context;
+        private readonly RsvpRepository _rsvpRepository;
+        
+        public RsvpRepositoryTests()
+        {
+            var options = new DbContextOptionsBuilder<EventDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+                
+            _context = new EventDbContext(options);
+            _rsvpRepository = new RsvpRepository(_context);
+            
+            SeedTestData();
+        }
+        
+        private void SeedTestData()
+        {
+            // Create events first (required for RSVPs)
+            var events = new[]
+            {
+                new Event 
+                { 
+                    EventId = 1, 
+                    Name = "Test Event 1", 
+                    Description = "Test Description 1",
+                    EventDate = DateTime.Now.AddDays(30),
+                    Location = "Test Location 1",
+                    MaxAttendees = 100
+                },
+                new Event 
+                { 
+                    EventId = 2, 
+                    Name = "Test Event 2", 
+                    Description = "Test Description 2",
+                    EventDate = DateTime.Now.AddDays(45),
+                    Location = "Test Location 2",
+                    MaxAttendees = 150
+                }
+            };
+            
+            _context.Events.AddRange(events);
+            _context.SaveChanges();
+        }
+        
+        [Fact]
+        public void GetAllRsvps_NoRsvps_ReturnsEmptyList()
+        {
+            // Act
+            var result = _rsvpRepository.GetAllRsvps();
+            
+            // Assert
+            Assert.Empty(result);
+        }
+        
+        [Fact]
+        public void AddRsvp_ValidRsvp_AddsToDatabase()
+        {
+            // Arrange
+            var newRsvp = new Rsvp
+            {
+                EventId = 1,
+                Name = "John Doe",
+                Email = "john@example.com",
+                Phone = "123-456-7890",
+                RsvpDate = DateTime.Now
+            };
+            
+            // Act
+            _rsvpRepository.AddRsvp(newRsvp);
+            _rsvpRepository.SaveChanges();
+            
+            // Assert
+            var allRsvps = _rsvpRepository.GetAllRsvps();
+            Assert.Single(allRsvps);
+            Assert.Equal("John Doe", allRsvps.First().Name);
+        }
+        
+        [Fact]
+        public void GetRsvpById_ValidId_ReturnsRsvp()
+        {
+            // Arrange
+            var rsvp = new Rsvp
+            {
+                EventId = 1,
+                Name = "Jane Doe",
+                Email = "jane@example.com",
+                Phone = "987-654-3210"
+            };
+            _context.Rsvps.Add(rsvp);
+            _context.SaveChanges();
+            
+            // Act
+            var result = _rsvpRepository.GetRsvpById(rsvp.RsvpId);
+            
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Jane Doe", result.Name);
+            Assert.Equal("jane@example.com", result.Email);
+        }
+        
+        [Fact]
+        public void GetRsvpById_InvalidId_ReturnsNull()
+        {
+            // Act
+            var result = _rsvpRepository.GetRsvpById(999);
+            
+            // Assert
+            Assert.Null(result);
+        }
+        
+        [Fact]
+        public void GetRsvpsByEventId_ValidEventId_ReturnsCorrectRsvps()
+        {
+            // Arrange
+            var rsvp1 = new Rsvp { EventId = 1, Name = "Person 1", Email = "person1@example.com" };
+            var rsvp2 = new Rsvp { EventId = 1, Name = "Person 2", Email = "person2@example.com" };
+            var rsvp3 = new Rsvp { EventId = 2, Name = "Person 3", Email = "person3@example.com" };
+            
+            _context.Rsvps.AddRange(rsvp1, rsvp2, rsvp3);
+            _context.SaveChanges();
+            
+            // Act
+            var result = _rsvpRepository.GetRsvpsByEventId(1);
+            
+            // Assert
+            Assert.Equal(2, result.Count());
+            Assert.All(result, r => Assert.Equal(1, r.EventId));
+        }
+        
+        [Fact]
+        public void UpdateRsvp_ValidRsvp_UpdatesInDatabase()
+        {
+            // Arrange
+            var rsvp = new Rsvp
+            {
+                EventId = 1,
+                Name = "Original Name",
+                Email = "original@example.com",
+                Phone = "111-111-1111"
+            };
+            _context.Rsvps.Add(rsvp);
+            _context.SaveChanges();
+            
+            // Modify the RSVP
+            rsvp.Name = "Updated Name";
+            rsvp.Email = "updated@example.com";
+            rsvp.Phone = "222-222-2222";
+            
+            // Act
+            _rsvpRepository.UpdateRsvp(rsvp);
+            _rsvpRepository.SaveChanges();
+            
+            // Assert
+            var updatedRsvp = _rsvpRepository.GetRsvpById(rsvp.RsvpId);
+            Assert.NotNull(updatedRsvp);
+            Assert.Equal("Updated Name", updatedRsvp.Name);
+            Assert.Equal("updated@example.com", updatedRsvp.Email);
+            Assert.Equal("222-222-2222", updatedRsvp.Phone);
+        }
+        
+        [Fact]
+        public void DeleteRsvp_ValidId_RemovesFromDatabase()
+        {
+            // Arrange
+            var rsvp = new Rsvp 
+            { 
+                EventId = 1, 
+                Name = "Test Person", 
+                Email = "test@example.com" 
+            };
+            _context.Rsvps.Add(rsvp);
+            _context.SaveChanges();
+            
+            var rsvpId = rsvp.RsvpId;
+            
+            // Act
+            _rsvpRepository.DeleteRsvp(rsvpId);
+            _rsvpRepository.SaveChanges();
+            
+            // Assert
+            var deletedRsvp = _rsvpRepository.GetRsvpById(rsvpId);
+            Assert.Null(deletedRsvp);
+        }
+        
+        public void Dispose()
+        {
+            _context.Dispose();
+        }
+    }
+}
+```
+
+#### 🎯 Why Separate Repository Test Classes?
+
+This approach mirrors our controller test organization and provides:
+
+- **`EventRepositoryTests`**: Only tests EventRepository methods
+- **`RsvpRepositoryTests`**: Only tests RsvpRepository methods  
+- **Focused setup**: Each class only seeds the data it needs
+- **Clear responsibilities**: Easy to locate and maintain specific tests
+- **Better test coverage**: More comprehensive testing of edge cases
+- **Consistent structure**: Matches our controller test organization
 
 ### 14.4 Run Tests
 
@@ -1817,27 +2178,23 @@ dotnet run
 ### 15.2 Test All Functionality
 
 1. **Home Page**:
-
    - ✅ Should display 5 seeded events in card layout
    - ✅ Each card shows event details (name, date, location, attendees)
    - ✅ RSVP buttons work and navigate correctly
 
 2. **RSVP Creation**:
-
    - ✅ Form loads with event details
    - ✅ Validation works for required fields
    - ✅ Email validation functions properly
    - ✅ Successfully creates RSVP and redirects
 
 3. **RSVP Management**:
-
    - ✅ RSVP list shows all created RSVPs
    - ✅ Edit functionality works
    - ✅ Delete confirmation works
    - ✅ Details view displays correctly
 
 4. **Navigation**:
-
    - ✅ All navigation links work
    - ✅ Back buttons function properly
    - ✅ Breadcrumb navigation is intuitive
@@ -1866,7 +2223,6 @@ You have successfully built a complete Event RSVP Management System that demonst
 ### ✅ What You've Learned
 
 1. **Entity Framework Core**:
-
    - DbContext setup and configuration
    - Entity models with data annotations
    - Database relationships (one-to-many)
@@ -1874,21 +2230,18 @@ You have successfully built a complete Event RSVP Management System that demonst
    - Database seeding
 
 2. **Repository Pattern**:
-
    - Interface-based design
    - Separation of concerns
    - Testable architecture
    - CRUD operations abstraction
 
 3. **ASP.NET Core MVC**:
-
    - Controllers with dependency injection
    - Action methods for CRUD operations
    - Model validation
    - Routing and navigation
 
 4. **User Interface**:
-
    - Responsive design with Bootstrap 5
    - Modern card-based layouts
    - Form handling and validation
@@ -1900,7 +2253,7 @@ You have successfully built a complete Event RSVP Management System that demonst
    - In-memory database testing
    - Controller and repository testing
 
-### Next Steps
+###  Next Steps
 
 Now that you've completed this exercise, consider extending the project with:
 
@@ -1911,9 +2264,10 @@ Now that you've completed this exercise, consider extending the project with:
 - **Advanced Filtering**: Search and filter events
 - **API Endpoints**: RESTful API for mobile apps
 
-### Additional Learning Resources
+###  Additional Learning Resources
 
 - [Entity Framework Core Documentation](https://docs.microsoft.com/en-us/ef/core/)
 - [ASP.NET Core MVC Documentation](https://docs.microsoft.com/en-us/aspnet/core/mvc/)
 - [Unit Testing in .NET](https://docs.microsoft.com/en-us/dotnet/core/testing/)
 - [Bootstrap 5 Documentation](https://getbootstrap.com/docs/5.0/)
+
